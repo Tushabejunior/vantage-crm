@@ -3,7 +3,7 @@ const router = express.Router();
 const { getAllTargets, updateTarget } = require('../controllers/targetController');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 
-router.get('/', getAllTargets);
+router.get('/', verifyToken, getAllTargets);
 router.put('/:key', verifyToken, requireAdmin, updateTarget);
 
 module.exports = router;

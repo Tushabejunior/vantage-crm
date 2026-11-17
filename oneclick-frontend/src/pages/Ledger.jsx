@@ -4,11 +4,15 @@ import { getClients } from '../api/clients';
 import { getServices } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import Modal from '../components/Modal';
+import { useSettings } from '../context/SettingsContext'; 
+
+const now = new Date();
+const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
 const emptyForm = {
   client_id: '', service_id: '', amount_excl_vat: '', amount_incl_vat: '',
   commission_rate: 0.15, commission: '', date_paid: '', invoice_number: '',
-  sale_month: '', notes: '',
+  sale_month: currentMonth, notes: '',
 };
 
 const darkSelect = { colorScheme: 'dark' };
@@ -16,6 +20,8 @@ const inputCls = "bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 p
 
 export default function Ledger() {
   const { isAdmin } = useAuth();
+  const { settings } = useSettings();
+const vatRate = parseFloat(settings.vat_rate) || 0.18;
   const [sales, setSales] = useState([]);
   const [clients, setClients] = useState([]);
   const [services, setServices] = useState([]);
@@ -76,15 +82,13 @@ export default function Ledger() {
   }
 
   function handleExclChange(value) {
-    const n = parseFloat(value) || 0;
-    const rate = parseFloat(form.commission_rate) || 0;
+   const n = parseFloat(value) || 0;
     setForm((f) => ({
-      ...f, amount_excl_vat: value,
-      amount_incl_vat: Math.round(n * 1.18 * 100) / 100,
-      commission: Math.round(n * rate * 100) / 100,
-    }));
-  }
-
+    ...f,
+    amount_excl_vat: value,
+    amount_incl_vat: n ? Math.round(n * (1 + vatRate) * 100) / 100 : '',
+      }));
+     } 
   async function handleSubmit(e) {
     e.preventDefault();
     const payload = { ...form, client_id: Number(form.client_id), service_id: Number(form.service_id) };
@@ -202,11 +206,10 @@ export default function Ledger() {
             <input type="number" placeholder="Amount excl. VAT" value={form.amount_excl_vat} onChange={(e) => handleExclChange(e.target.value)} className={inputCls} required />
             <input type="number" placeholder="Amount incl. VAT" value={form.amount_incl_vat} onChange={(e) => setForm({ ...form, amount_incl_vat: e.target.value })} className={inputCls} />
             <input type="number" step="0.01" placeholder="Commission rate" value={form.commission_rate} onChange={(e) => setForm({ ...form, commission_rate: e.target.value })} className={inputCls} />
-            <input type="number" placeholder="Commission" value={form.commission} onChange={(e) => setForm({ ...form, commission: e.target.value })} className={inputCls} />
+            <input type="number" placeholder="Commission (auto)" value={Math.round((parseFloat(form.amount_excl_vat) || 0) * (parseFloat(form.commission_rate) || 0) * 100) / 100 || ''} readOnly className={`${inputCls} opacity-70`} />
             <input type="date" value={form.date_paid} onChange={(e) => setForm({ ...form, date_paid: e.target.value })} style={darkSelect} className={inputCls} />
             <input type="text" placeholder="Invoice #" value={form.invoice_number} onChange={(e) => setForm({ ...form, invoice_number: e.target.value })} className={inputCls} />
-            <input type="text" placeholder="Month (2026-07)" value={form.sale_month} onChange={(e) => setForm({ ...form, sale_month: e.target.value })} className={inputCls} required />
-            <input type="text" placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={`${inputCls} col-span-2`} />
+            <input type="month" value={form.sale_month} onChange={(e) => setForm({ ...form, sale_month: e.target.value })} style={darkSelect} className={inputCls} required />            <input type="text" placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={`${inputCls} col-span-2`} />
             <div className="col-span-2 flex justify-end gap-2 mt-2">
               <button type="button" onClick={() => setShowForm(false)} className="border border-[var(--border)] text-[var(--text)] text-sm rounded-lg px-4 py-2">Cancel</button>
               <button type="submit" className="bg-[var(--accent)] text-white font-semibold text-sm rounded-lg px-4 py-2 hover:opacity-90 transition-opacity">{editingId ? 'Save changes' : 'Add entry'}</button>
