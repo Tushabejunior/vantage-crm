@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, BookOpen, Users, Briefcase, Calendar,
+  LayoutDashboard, BookOpen, Users, LayoutGrid, Briefcase, Calendar, ClipboardList,
   Lightbulb, Sparkles, Target, FileBarChart
 } from 'lucide-react';
 import VantageLogo from './VantageLogo';
@@ -9,7 +9,9 @@ const MAIN_ITEMS = [
   { key: 'overview', label: 'Overview', icon: LayoutDashboard },
   { key: 'ledger', label: 'Ledger', icon: BookOpen },
   { key: 'clients', label: 'Clients', icon: Users },
+  { key: 'sectors', label: 'Sectors', icon: LayoutGrid },
   { key: 'services', label: 'Services', icon: Briefcase },
+  { key: 'activity', label: 'Activity Log', icon: ClipboardList },
   { key: 'calendar', label: 'Calendar', icon: Calendar },
 ];
 
@@ -53,7 +55,7 @@ export default function Sidebar({ activeTab, onChange }) {
   const { settings } = useSettings();
 
   return (
-    <aside className="w-60 shrink-0 h-screen sticky top-0 bg-[var(--surface)] border-r border-[var(--border)] p-4 flex flex-col">
+    <aside className="w-60 shrink-0 h-screen sticky top-0 bg-[var(--surface)] border-r border-[var(--border)] p-4 flex flex-col overflow-y-auto">
       <div className="flex items-center gap-2 px-2 mb-6">
         <VantageLogo size={32} />
         <span className="font-semibold text-[var(--text)] text-lg">{settings.company_name}</span>

@@ -121,3 +121,18 @@ INSERT IGNORE INTO targets (target_key, target_value) VALUES
 -- Default company name (changeable from the app)
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
   ('company_name', 'Vantage');
+
+CREATE TABLE IF NOT EXISTS activities (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  client_id INT NOT NULL,
+  activity_type ENUM('Call', 'Email', 'Meeting', 'Visit', 'Note') NOT NULL DEFAULT 'Call',
+  summary VARCHAR(255) NOT NULL,
+  details TEXT,
+  activity_date DATE NOT NULL,
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  INDEX idx_activity_date (activity_date),
+  INDEX idx_activity_client (client_id)
+);
